@@ -1,4 +1,4 @@
-package computer
+package main
 
 import (
 	"log"
@@ -6,8 +6,9 @@ import (
 )
 
 func main() {
-	handler := http.HandlerFunc(ComputerServer)
-	if err := http.ListenAndServe(":1337", handler); err != nil {
+	server := &ComputerServer{}
+
+	if err := http.ListenAndServe(":1337", server); err != nil {
 		log.Fatalf("could not listen on the port :1337 %v", err)
 	}
 }
