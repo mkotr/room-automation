@@ -5,8 +5,15 @@ import (
 	"net/http"
 )
 
+type ComputerStore interface {
+	Shutdown() (string, error)
+}
+
+type ()
+
 //ComputerServer
 type ComputerServer struct {
+	store ComputerStore
 }
 
 func (c *ComputerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +26,6 @@ func (c *ComputerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "Nothing here. POST to /shutdown or GET to / for healthcheck")
 	}
-
 }
 
 func (c *ComputerServer) processGet(w http.ResponseWriter, r *http.Request) {
@@ -34,6 +40,7 @@ func (c *ComputerServer) processGet(w http.ResponseWriter, r *http.Request) {
 
 func (c *ComputerServer) processPost(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/shutdown" {
+		c.store.Shutdown()
 		w.WriteHeader(http.StatusAccepted)
 		fmt.Fprintf(w, "Successfully sent the shut down command")
 	} else {

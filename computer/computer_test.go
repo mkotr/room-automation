@@ -6,6 +6,13 @@ import (
 	"testing"
 )
 
+type StubComputerStore struct {
+}
+
+func (s *StubComputerStore) Shutdown() (string, error) {
+	return "", nil
+}
+
 func TestGET(t *testing.T) {
 
 	server := &ComputerServer{}
@@ -39,8 +46,10 @@ func TestGET(t *testing.T) {
 
 func TestPOST(t *testing.T) {
 
-	server := ComputerServer{}
-	t.Run("returns 202 status accepted on /shutdown and message", func(t *testing.T) {
+	store := StubComputerStore{}
+	server := ComputerServer{&store}
+
+	t.Run("returns 202 status accepted on /shutdown and message and returns no error", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodPost, "/shutdown", nil)
 		response := httptest.NewRecorder()
 
@@ -51,6 +60,7 @@ func TestPOST(t *testing.T) {
 
 		assertResponseBody(t, got, want)
 		assertStatus(t, response.Code, http.StatusAccepted)
+
 	})
 
 	t.Run("returns 404 status accepted all other paths /shutdown and message", func(t *testing.T) {
@@ -64,6 +74,11 @@ func TestPOST(t *testing.T) {
 
 		assertResponseBody(t, got, want)
 		assertStatus(t, response.Code, http.StatusNotFound)
+
+		_, err := store.Shutdown()
+		if err != nil {
+			t.Errorf("got an error when we didnt want one, %v", err)
+		}
 	})
 }
 
