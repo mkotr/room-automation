@@ -1,35 +1,27 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"net/http"
-	"os/exec"
+
+	"github.com/gorilla/mux"
 )
 
-type InMemoryComputerStore struct{}
+func PingFunc(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Successfully pinged the computer.")
+}
 
-var execCommand = exec.Command
+func ShutdownFunc(w http.ResponseWriter, r *http.Request) {
 
-func (i *InMemoryComputerStore) Shutdown() (string, error) {
-	cmd := exec.Command("shutdown", "-s", "-t", "10")
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	err := cmd.Run()
-
-	if err != nil {
-		return out.String(), err
-	}
-	return out.String(), nil
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func main() {
-	fmt.Println("Running the computer api")
-	store := InMemoryComputerStore{}
-	server := &ComputerServer{&store}
-	if err := http.ListenAndServe(":1337", server); err != nil {
-		log.Fatalf("could not listen on the port :1337 %v", err)
-	}
+
+	r := mux.NewRouter()
+	r.HandleFunc("/", PingFunc)
+
+	fmt.Println("Running on port :8080")
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
